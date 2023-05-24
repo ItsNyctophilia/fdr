@@ -65,4 +65,9 @@ void begin(void) {
 void end(int *sockets, size_t sock_len) {
     sem_wait(&shutdown_semaphore);
     // TODO: gracefully close threads
+    for (int i = 0; i < sock_len; i++) {
+        if (sockets[i] > 2) { // don't accidentally close stdin, stdout, stderr
+            close(sockets[i]);
+        }
+    }
 }
