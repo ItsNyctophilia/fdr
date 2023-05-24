@@ -7,4 +7,6 @@
 
 char *init_hex_array(char *dec_str, size_t *num_elements);
 
+void print_hex_array(char *hex_array, size_t num_elements);
+
 #endif

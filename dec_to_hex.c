@@ -26,3 +26,20 @@ char *init_hex_array(char *dec_str, size_t *num_elements)
 	return hex_array;
 }
 
+void print_hex_array(char *hex_array, size_t num_elements)
+{
+	const char hex_chars[16] = { '0', '1', '2', '3', '4', '5', '6', '7',
+		'8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
+
+	size_t offset = 0;
+
+	while ((hex_array[offset] == 0) && (offset < num_elements - 1)) {
+	    // Skip past leading zeroes
+		++offset;
+	}
+
+	for (size_t i = offset; i < num_elements; ++i) {
+		printf("%c", hex_chars[hex_array[i]]);
+	}
+	putchar('\n');
+}
