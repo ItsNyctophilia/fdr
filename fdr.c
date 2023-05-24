@@ -19,7 +19,7 @@ int main(int argc, char *argv[]) {
     int8_t valid_sockets = 0;
     for (size_t i = 0; i < NUM_PORTS; i++) {
         char port_str[PORT_STR_LEN];
-        if (port_to_str(uid, i, port_str, PORT_STR_LEN)) {
+        if (!port_to_str(uid, i, port_str, PORT_STR_LEN)) {
             fprintf(stderr, "Invalid port: %s\n", port_str);
             continue;
         }

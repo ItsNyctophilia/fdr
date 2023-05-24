@@ -14,7 +14,7 @@ enum { PORT_OFFSET = 1000, VALID_PORT = 1024 };
 bool port_to_str(u_int32_t base, size_t scale, char *port_str, size_t len) {
     u_int32_t port = base + PORT_OFFSET * scale;
     snprintf(port_str, len, "%d", port);
-    return port <= VALID_PORT ? true : false;
+    return port < VALID_PORT ? false : true;
 }
 
 int prepare_socket(const char *port_str) {
