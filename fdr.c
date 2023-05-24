@@ -1,5 +1,6 @@
 // Code taken from class examples, by professor Noel
 #include "utils/fdr_utils.h"
+#include <pthread.h>
 #include <stdio.h>
 #include <sys/types.h>
 #include <sysexits.h> // exit codes
@@ -19,7 +20,7 @@ int main(int argc, char *argv[]) {
     // open and bind ports
     uid_t uid = getuid();
     int sockets[NUM_PORTS] = {0};
-    int8_t valid_sockets = 0;
+    bool valid_sockets = false;
     for (size_t i = 0; i < NUM_PORTS; i++) {
         char port_str[PORT_STR_LEN];
         if (!port_to_str(uid, i, port_str, PORT_STR_LEN)) {
@@ -37,14 +38,22 @@ int main(int argc, char *argv[]) {
             }
             return -sockets[i]; // flip the sign back to the original error code
         }
-        valid_sockets++;
+        valid_sockets = true;
     }
-    if (valid_sockets == 0) {
+    if (!valid_sockets) {
         fprintf(stderr, "No valid sockets opened\n");
         return EX_UNAVAILABLE;
     }
 
-    // TODO: open threads for each port
+    pthread_t threads[NUM_PORTS] = {0};
+
+    for (int i = 0; i < NUM_PORTS; i++) {
+        if (sockets[i]) { // skip sockets that were not opened
+            pthread_create(&threads[i], NULL, service_thread, &sockets[i]);
+            printf("Thread %ld is listening on socket %d\n", threads[i],
+                   sockets[i]);
+        }
+    }
     // wait until a request to shutdown the server is made
-    end(sockets, NUM_PORTS);
+    return end(sockets, NUM_PORTS);
 }

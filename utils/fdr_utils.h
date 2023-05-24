@@ -39,7 +39,10 @@ void begin(void);
  *
  * @param sockets The opened sockets to be closed.
  * @param sock_len The number of opened sockets.
+ * @return int 0 on successful server close, non-zero on error.
  */
-void end(int *sockets, size_t sock_len);
+int end(int *sockets, size_t sock_len);
+
+void *service_thread(void *arg);
 
 #endif /* FDR_UTILS_H */

@@ -2,6 +2,7 @@
 #define _POSIX_C_SOURCE 201112L
 #include "fdr_utils.h"
 #include <netdb.h>
+#include <pthread.h>
 #include <semaphore.h>
 #include <signal.h>
 #include <stdbool.h>
@@ -14,6 +15,12 @@
 enum { PORT_OFFSET = 1000, VALID_PORT = 1024 };
 static sem_t shutdown_semaphore;
 
+/* STATIC FUNCTIONS */
+static void serve_port(int sd) {
+    printf("Processing input from socket %d\n", sd);
+}
+
+/* PUBLIC FUNCTIONS */
 bool port_to_str(u_int32_t base, size_t scale, char *port_str, size_t len) {
     u_int32_t port = base + PORT_OFFSET * scale;
     snprintf(port_str, len, "%d", port);
@@ -62,7 +69,7 @@ void begin(void) {
     sigaction(SIGINT, &shutdown_action, NULL);
 }
 
-void end(int *sockets, size_t sock_len) {
+int end(int *sockets, size_t sock_len) {
     sem_wait(&shutdown_semaphore);
     // TODO: gracefully close threads
     for (int i = 0; i < sock_len; i++) {
@@ -70,4 +77,19 @@ void end(int *sockets, size_t sock_len) {
             close(sockets[i]);
         }
     }
+    return EX_OK;
+}
+
+void *service_thread(void *arg) {
+    sigset_t old_set, merge_set;
+    sigemptyset(&merge_set);
+    sigaddset(&merge_set, SIGINT);
+    pthread_sigmask(SIG_BLOCK, &merge_set, &old_set);
+
+    int sd = *((int *)arg);
+    serve_port(sd);
+
+    pthread_sigmask(SIG_SETMASK, &old_set, NULL);
+
+    return NULL;
 }
