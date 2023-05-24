@@ -1,0 +1,120 @@
+\documentclass[12pt]{article}
+\usepackage[english]{babel}
+\usepackage[utf8x]{inputenc}
+\usepackage{amsmath}
+\usepackage{listings}
+\usepackage{graphicx}
+\usepackage[colorinlistoftodos]{todonotes}
+
+\begin{document}
+	\begin{titlepage}
+	%https://www.overleaf.com/project/63fcda2d47db2df20619255b
+	\newcommand{\HRule}{\rule{\linewidth}{0.5mm}} % Defines a new command for the horizontal lines, change thickness here
+
+	\center % Center everything on the page
+
+	%----------------------------------------------------------------------------------------
+	%	HEADING SECTIONS
+	%----------------------------------------------------------------------------------------
+
+	\textsc{\Large University of Maryland Baltimore Campus}\\[1.5cm] % Name of your university/college
+	\textsc{\Large Tool Developer Qualification Course}\\[0.5cm] % Major heading such as course name
+	\textsc{\large James Viner, Raymone Miller}\\[0.5cm] % Minor heading such as course title
+
+	%----------------------------------------------------------------------------------------
+	%	TITLE SECTION
+	%----------------------------------------------------------------------------------------
+
+	\HRule \\[0.4cm]
+		\huge \bfseries FDR\\[0.4cm] % Title of your document
+	\HRule \\[1.5cm]
+	%----------------------------------------------------------------------------------------
+	%	AUTHOR SECTION
+	%----------------------------------------------------------------------------------------
+	%https://www.overleaf.com/project/63fcda2d47db2df20619255b
+	\end{titlepage}
+	\tableofcontents
+	\newpage
+	\section{Project Summary}
+		Some server daemons will offer services to those that request
+		it, such as NTP. Write a math server that will provide similar
+		services to those that request a few specific items. The server
+		should accept UDP requests in one of three forms.
+		\begin{lstlisting}
+Fnumber
+    Given a decimal number is between 0-300 (inclusive), the response packet
+    should be F(number) in hexadecimal, where F() is the Fibonacci function.
+Dnumber
+    Given a decimal number between 0-1019 (inclusive), the response packet
+    should be that number in hexadecimal.
+Rnvmber
+    Given a Roman numeral nvmber between I-MMMM (inclusive), the response
+    packet should be that number in hexadecimal.
+		\end{lstlisting}
+	\section{Features Targeted}
+	\begin{itemize}
+		\item Use Tex to write documentation
+		\item Add logging with syslog(3)
+		\item Add command-line flag -e
+		\item Add command-line flag -i
+	\end{itemize}
+	\section{Architecture}
+		\subsection{Data}
+			\begin{lstlisting}[language=C]
+typedef struct {
+	const struct sockaddr *client;
+	socklen_t client_sz;
+	char *input;
+	char *output;
+	size_t input_len;
+	size_t output_len;
+} request_t;
+			\end{lstlisting}
+	\section{Significant Functions}
+		\begin{lstlisting}
+void *service_thread(void *arg);
+		\end{lstlisting}
+		process thread.
+
+		\begin{lstlisting}
+void serve_port(int sd);
+		\end{lstlisting}
+		process data sent to port, and determine which operation to perform.
+
+		\begin{lstlisting}
+int fibonacci(request_t *request);
+		\end{lstlisting}
+		calculate Fibonacci number in hex up to given input number. Returns error code
+
+		\begin{lstlisting}
+int large_hex(request_t *request);
+		\end{lstlisting}
+		Convert a possibly large number into hex. Returns error code
+
+		\begin{lstlisting}
+int roman(request_t *request);
+		\end{lstlisting}
+		Convert a roman numeral to hex. Returns error code
+
+	\section{Order of features}
+		\begin{enumerate}
+			\item Initialize a Gitlab page for the project.
+			\item Create design plan.
+			\item Create server code
+			\item Validate user input
+			\item Design processing of fibonacci request
+			\item Design processing of big hex request
+			\item Design processing of roman numeral request
+			\item Test output from server to client
+			\item Add feature: logging
+			\item Add feature: -e error messages
+			\item Add feature: -i case matching
+			\item Final write up.
+		\end{enumerate}
+	\section{User Interface}
+		When a client connects to the server and sends a request via
+		text, the server will send a response back based on the
+		request. If the -e flag is used, an error message will be sent
+		in response on improper input. Otherwise, no response will
+		be sent back on improper input.
+\end{document}
