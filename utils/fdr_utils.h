@@ -1,3 +1,5 @@
+#ifndef FDR_UTILS_H
+#define FDR_UTILS_H
 #include <stdbool.h>
 #include <sys/types.h>
 
@@ -39,3 +41,5 @@ void begin(void);
  * @param sock_len The number of opened sockets.
  */
 void end(int *sockets, size_t sock_len);
+
+#endif /* FDR_UTILS_H */
