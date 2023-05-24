@@ -2,6 +2,8 @@
 #define _POSIX_C_SOURCE 201112L
 #include "fdr_utils.h"
 #include <netdb.h>
+#include <semaphore.h>
+#include <signal.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <sys/socket.h>
@@ -10,6 +12,7 @@
 #include <unistd.h>
 
 enum { PORT_OFFSET = 1000, VALID_PORT = 1024 };
+static sem_t shutdown_semaphore;
 
 bool port_to_str(u_int32_t base, size_t scale, char *port_str, size_t len) {
     u_int32_t port = base + PORT_OFFSET * scale;
@@ -48,4 +51,18 @@ int prepare_socket(const char *port_str) {
     freeaddrinfo(results);
 
     return sd;
+}
+
+void shutdown_handler(int signum) { sem_post(&shutdown_semaphore); }
+
+void begin(void) {
+    sem_init(&shutdown_semaphore, 0, 0);
+    const struct sigaction shutdown_action = {.sa_handler = shutdown_handler};
+    // TODO: handle other possibly program ending signals
+    sigaction(SIGINT, &shutdown_action, NULL);
+}
+
+void end(int *sockets, size_t sock_len) {
+    sem_wait(&shutdown_semaphore);
+    // TODO: gracefully close threads
 }

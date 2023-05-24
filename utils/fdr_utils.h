@@ -23,3 +23,19 @@ int prepare_socket(const char *port_str);
  * @return false If the adjusted number is not a valid port.
  */
 bool port_to_str(u_int32_t base, size_t scale, char *port_str, size_t len);
+
+/**
+ * @brief Start the server.
+ *
+ * Will initialize any needed values on the back end.
+ *
+ */
+void begin(void);
+
+/**
+ * @brief Wait for the server to finish, then clean up resources.
+ *
+ * @param sockets The opened sockets to be closed.
+ * @param sock_len The number of opened sockets.
+ */
+void end(int *sockets, size_t sock_len);

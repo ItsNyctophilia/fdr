@@ -13,6 +13,9 @@ int main(int argc, char *argv[]) {
         fprintf(stderr, "Usage: %s \n", argv[0]);
         return EX_USAGE;
     }
+
+    begin();
+
     // open and bind ports
     uid_t uid = getuid();
     int sockets[NUM_PORTS] = {0};
@@ -42,5 +45,6 @@ int main(int argc, char *argv[]) {
     }
 
     // TODO: open threads for each port
-    // TODO: gracefully close threads
+    // wait until a request to shutdown the server is made
+    end(sockets, NUM_PORTS);
 }
