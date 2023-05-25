@@ -2,6 +2,7 @@
 #define _POSIX_C_SOURCE 201112L
 #include "fdr_utils.h"
 #include "math_ops.h"
+#include <arpa/inet.h>
 #include <ctype.h>
 #include <netdb.h>
 #include <pthread.h>
@@ -18,20 +19,48 @@
 
 enum { PORT_OFFSET = 1000, VALID_PORT = 1024, LOG_LEVEL = LOG_INFO | LOG_USER };
 static sem_t shutdown_semaphore;
+struct client_info {
+    char addr[INET6_ADDRSTRLEN];
+    uint16_t port;
+};
 
 /* STATIC FUNCTIONS */
-static void log_request(const struct sockaddr *client, int sd) {
-    // TODO: add logging
-    syslog(LOG_LEVEL, "Received connection from _ on socket _");
+static void probe_client(const struct sockaddr *client,
+                         struct client_info *info) {
+    // get information from the client
+    if (client->sa_family == AF_INET6) {
+        inet_ntop(client->sa_family,
+                  &((struct sockaddr_in6 *)client)->sin6_addr, info->addr,
+                  sizeof(info->addr));
+        info->port = ntohs(((struct sockaddr_in6 *)client)->sin6_port);
+    } else {
+        inet_ntop(client->sa_family, &((struct sockaddr_in *)client)->sin_addr,
+                  info->addr, sizeof(info->addr));
+        info->port = ntohs(((struct sockaddr_in *)client)->sin_port);
+    }
+}
+
+static void log_request(const struct sockaddr *client, int sd,
+                        const char *request) {
+    struct client_info info = {0};
+    probe_client(client, &info);
+    syslog(LOG_LEVEL,
+           "Receive connection from %s:%hu on socket %d with request %s",
+           info.addr, info.port, sd, request);
 }
 
 static void log_error(const struct sockaddr *client, int sd, const char *msg,
                       const char *input) {
-    fprintf(stderr, "%s: %s\n", msg, input);
+    syslog(LOG_LEVEL, "%s: %s\n", msg, input);
 }
 
 static void log_response(const struct sockaddr *client, int sd,
-                         const char *input, const char *output, ssize_t sent) {}
+                         const char *input, const char *output) {
+    struct client_info info = {0};
+    probe_client(client, &info);
+    syslog(LOG_LEVEL, "Sending response (%s) to client %s:%hu on socket %d",
+           output, info.addr, info.port, sd);
+}
 
 static void serve_port(int sd) {
     int err;
@@ -49,7 +78,7 @@ static void serve_port(int sd) {
             close(sd);
             return;
         }
-        log_request((const struct sockaddr *)&client, sd);
+        log_request((const struct sockaddr *)&client, sd, input);
 
         char response[BUF_LEN] = {0};
         char working_response[BUF_LEN] = {0};
@@ -75,7 +104,6 @@ static void serve_port(int sd) {
             }
             break;
         case 'R':
-            snprintf(response, BUF_LEN, "Roman Numeral: %s\n", input + 1);
             err = roman_to_hex(input + 1, response, BUF_LEN);
             if (err) {
                 log_error((const struct sockaddr *)&client, sd,
@@ -90,10 +118,9 @@ static void serve_port(int sd) {
             continue;
             break;
         }
-        ssize_t sent = sendto(sd, response, strlen(response), 0,
-                              (struct sockaddr *)&client, client_sz);
-        log_response((const struct sockaddr *)&client, sd, input, response,
-                     sent);
+        sendto(sd, response, strlen(response), 0, (struct sockaddr *)&client,
+               client_sz);
+        log_response((const struct sockaddr *)&client, sd, input, response);
     }
 }
 
@@ -106,7 +133,7 @@ bool port_to_str(u_int32_t base, size_t scale, char *port_str, size_t len) {
 
 int prepare_socket(const char *port_str) {
     struct addrinfo hints = {0};
-    hints.ai_family = AF_INET;
+    hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_DGRAM;
     hints.ai_flags = AI_PASSIVE;
     struct addrinfo *results;
