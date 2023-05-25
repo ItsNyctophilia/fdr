@@ -12,12 +12,28 @@
 #include <sysexits.h> // exit codes
 #include <unistd.h>
 
-enum { PORT_OFFSET = 1000, VALID_PORT = 1024 };
+enum { PORT_OFFSET = 1000, VALID_PORT = 1024, BUF_LEN = 1024 };
 static sem_t shutdown_semaphore;
 
 /* STATIC FUNCTIONS */
 static void serve_port(int sd) {
-    printf("Processing input from socket %d\n", sd);
+    for (;;) {
+        struct sockaddr_storage client;
+        socklen_t client_sz = sizeof(client);
+
+        char buffer[1024];
+        // TODO: add logging information using syslog(3)
+        ssize_t received = recvfrom(sd, buffer, sizeof(buffer) - 1, 0,
+                                    (struct sockaddr *)&client, &client_sz);
+        if (received < 0) {
+            fprintf(stderr, "Closing socket %d: ", sd);
+            perror("Unable to receive");
+            close(sd);
+            return;
+        }
+        buffer[received] = '\0';
+        printf("Message: %s\n", buffer);
+    }
 }
 
 /* PUBLIC FUNCTIONS */
