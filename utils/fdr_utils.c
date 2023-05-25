@@ -16,12 +16,7 @@
 #include <syslog.h>
 #include <unistd.h>
 
-enum {
-    PORT_OFFSET = 1000,
-    VALID_PORT = 1024,
-    BUF_LEN = 1024,
-    LOG_LEVEL = LOG_INFO | LOG_USER
-};
+enum { PORT_OFFSET = 1000, VALID_PORT = 1024, LOG_LEVEL = LOG_INFO | LOG_USER };
 static sem_t shutdown_semaphore;
 
 /* STATIC FUNCTIONS */
@@ -64,7 +59,7 @@ static void serve_port(int sd) {
         switch (operation) {
         // TODO: send a response with -e flag
         case 'F':
-            err = fib_to_hex(input + 1, working_response, BUF_LEN);
+            err = fib_to_hex(input + 1, response, BUF_LEN);
             if (err) {
                 log_error((const struct sockaddr *)&client, sd, "Invalid input",
                           input);
@@ -72,7 +67,7 @@ static void serve_port(int sd) {
             }
             break;
         case 'D':
-            err = dec_to_hex(input + 1, working_response, BUF_LEN);
+            err = dec_to_hex(input + 1, response, BUF_LEN);
             if (err) {
                 log_error((const struct sockaddr *)&client, sd, "Invalid input",
                           input);
@@ -81,7 +76,7 @@ static void serve_port(int sd) {
             break;
         case 'R':
             snprintf(response, BUF_LEN, "Roman Numeral: %s\n", input + 1);
-            err = roman_to_hex(input + 1, working_response, BUF_LEN);
+            err = roman_to_hex(input + 1, response, BUF_LEN);
             if (err) {
                 log_error((const struct sockaddr *)&client, sd,
                           "Invalid input:", input);
@@ -95,7 +90,6 @@ static void serve_port(int sd) {
             continue;
             break;
         }
-        printable_hex_array(working_response, response, BUF_LEN);
         ssize_t sent = sendto(sd, response, strlen(response), 0,
                               (struct sockaddr *)&client, client_sz);
         log_response((const struct sockaddr *)&client, sd, input, response,

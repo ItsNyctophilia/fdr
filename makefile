@@ -1,3 +1,6 @@
+# Assembly options
+CC=gcc
+# CFLAGS += -O1 -masm=intel -fno-asynchronous-unwind-tables
 # Sanity
 CLAGS += -Wall -Wextra -Wpedantic
 # On types
@@ -7,7 +10,13 @@ CFLAGS += -Waggregate-return -Winline
 
 CFLAGS += -std=c17 -pthread
 
-fdr: fdr.o utils/fdr_utils.o utils/math_ops.o
+fdr: fdr.o utils/fdr_utils.o utils/fibonacci.o utils/math_ops.o utils/dec_to_hex.o utils/roman_to_hex.o
+
+%.s: CFLAGS += -O1 -masm=intel -fno-asynchronous-unwind-tables
+
+.PHONY: debug
+debug: CFLAGS += -g
+debug: fdr
 
 .PHONY: check
 check: test/test-all
