@@ -85,11 +85,14 @@ void begin(void) {
     sigaction(SIGINT, &shutdown_action, NULL);
 }
 
-int end(int *sockets, size_t sock_len) {
+int end(int *sockets, pthread_t *threads, size_t sock_len) {
+    // wait until a shutdown signal is sent
     sem_wait(&shutdown_semaphore);
-    // TODO: gracefully close threads
     for (int i = 0; i < sock_len; i++) {
         if (sockets[i] > 2) { // don't accidentally close stdin, stdout, stderr
+            void *unused;
+            pthread_cancel(threads[i]);
+            pthread_join(threads[i], &unused);
             close(sockets[i]);
         }
     }

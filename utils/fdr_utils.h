@@ -38,10 +38,11 @@ void begin(void);
  * @brief Wait for the server to finish, then clean up resources.
  *
  * @param sockets The opened sockets to be closed.
+ * @param threads The spawned threads.
  * @param sock_len The number of opened sockets.
  * @return int 0 on successful server close, non-zero on error.
  */
-int end(int *sockets, size_t sock_len);
+int end(int *sockets, pthread_t *threads, size_t sock_len);
 
 void *service_thread(void *arg);
 

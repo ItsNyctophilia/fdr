@@ -50,10 +50,8 @@ int main(int argc, char *argv[]) {
     for (int i = 0; i < NUM_PORTS; i++) {
         if (sockets[i]) { // skip sockets that were not opened
             pthread_create(&threads[i], NULL, service_thread, &sockets[i]);
-            printf("Thread %ld is listening on socket %d\n", threads[i],
-                   sockets[i]);
         }
     }
     // wait until a request to shutdown the server is made
-    return end(sockets, NUM_PORTS);
+    return end(sockets, threads, NUM_PORTS);
 }
