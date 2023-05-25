@@ -3,6 +3,7 @@
 
 #include <stdlib.h>
 
+enum { BUF_LEN = 1024 };
 /**
  * @brief Convert a string of Roman numerals to a hexadecimal number.
  *

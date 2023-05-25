@@ -28,6 +28,13 @@ int dec_to_hex(const char *input, char *output, size_t output_len) {
 int fib_to_hex(const char *input, char *output, size_t output_len) {
     // TODO: error check input
     long step = strtol(input, NULL, 10);
-    fibonacci(step, output, output_len);
+    char temp[BUF_LEN] = {0};
+    fibonacci(step, temp, BUF_LEN);
+    size_t non_zero = strspn(temp, "0");
+    if (non_zero == strlen(temp)) {
+        // check if output is 0
+        non_zero--;
+    }
+    strncpy(output, temp + non_zero, output_len);
     return 0;
 }

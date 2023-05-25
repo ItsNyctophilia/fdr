@@ -102,4 +102,4 @@ fibonacci:
 .out_str:
 	.quad .str0
 .str0:
-	.string "%.16llX%.16llX%.16llX%.16llX\n"
+	.string "%.16llX%.16llX%.16llX%.16llX"

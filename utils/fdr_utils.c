@@ -15,7 +15,7 @@
 #include <sysexits.h> // exit codes
 #include <unistd.h>
 
-enum { PORT_OFFSET = 1000, VALID_PORT = 1024, BUF_LEN = 1024 };
+enum { PORT_OFFSET = 1000, VALID_PORT = 1024 };
 static sem_t shutdown_semaphore;
 
 /* STATIC FUNCTIONS */
