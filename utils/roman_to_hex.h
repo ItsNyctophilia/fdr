@@ -4,6 +4,6 @@
 #include <stdio.h>
 #include <string.h>
 
-int roman_to_dec(char *str);
+int roman_to_dec(const char *str);
 
 #endif

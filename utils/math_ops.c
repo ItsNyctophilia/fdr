@@ -1,9 +1,11 @@
 #include "math_ops.h"
 #include "dec_to_hex.h"
+#include "roman_to_hex.h"
 #include <stdio.h> // WARNING: TESTING ONLY
 
 int roman_to_hex(const char *input, char *output, size_t output_len) {
-    snprintf(output, output_len, "Roman Numeral: %s\n", input);
+    int converted = roman_to_dec(input);
+    snprintf(output, output_len, "%x\n", converted);
     return 0;
 }
 
