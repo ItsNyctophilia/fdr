@@ -7,7 +7,7 @@ CFLAGS += -Waggregate-return -Winline
 
 CFLAGS += -std=c17 -pthread
 
-fdr: fdr.o utils/fdr_utils.o utils/math_ops.o
+fdr: fdr.o utils/fdr_utils.o utils/math_ops.o utils/dec_to_hex.o
 
 .PHONY: check
 check: test/test-all

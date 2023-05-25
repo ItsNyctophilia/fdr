@@ -44,14 +44,14 @@ static void serve_port(int sd) {
         switch (operation) {
         // TODO: send a response with -e flag
         case 'F':
-            err = fib_to_hex(input + 1, working_response, BUF_LEN);
+            err = fib_to_hex(input + 1, response, BUF_LEN);
             if (err) {
                 fprintf(stderr, "Invalid input: %s\n", input);
                 continue;
             }
             break;
         case 'D':
-            err = dec_to_hex(input + 1, working_response, BUF_LEN);
+            err = dec_to_hex(input + 1, response, BUF_LEN);
             if (err) {
                 fprintf(stderr, "Invalid input: %s\n", input);
                 continue;
@@ -59,7 +59,7 @@ static void serve_port(int sd) {
             break;
         case 'R':
             snprintf(response, BUF_LEN, "Roman Numeral: %s\n", input + 1);
-            err = roman_to_hex(input + 1, working_response, BUF_LEN);
+            err = roman_to_hex(input + 1, response, BUF_LEN);
             if (err) {
                 fprintf(stderr, "Invalid input: %s\n", input);
                 continue;
@@ -71,7 +71,6 @@ static void serve_port(int sd) {
             continue;
             break;
         }
-        printable_hex_array(working_response, response, BUF_LEN);
         sendto(sd, response, strlen(response), 0, (struct sockaddr *)&client,
                client_sz);
     }
