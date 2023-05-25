@@ -1,12 +1,15 @@
 // Code taken from class examples, by professor Noel
 #define _POSIX_C_SOURCE 201112L
 #include "fdr_utils.h"
+#include "math_ops.h"
+#include <ctype.h>
 #include <netdb.h>
 #include <pthread.h>
 #include <semaphore.h>
 #include <signal.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include <string.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <sysexits.h> // exit codes
@@ -17,13 +20,14 @@ static sem_t shutdown_semaphore;
 
 /* STATIC FUNCTIONS */
 static void serve_port(int sd) {
+    int err;
     for (;;) {
         struct sockaddr_storage client;
         socklen_t client_sz = sizeof(client);
 
-        char buffer[1024];
+        char input[1024];
         // TODO: add logging information using syslog(3)
-        ssize_t received = recvfrom(sd, buffer, sizeof(buffer) - 1, 0,
+        ssize_t received = recvfrom(sd, input, sizeof(input) - 1, 0,
                                     (struct sockaddr *)&client, &client_sz);
         if (received < 0) {
             fprintf(stderr, "Closing socket %d: ", sd);
@@ -31,8 +35,45 @@ static void serve_port(int sd) {
             close(sd);
             return;
         }
-        buffer[received] = '\0';
-        printf("Message: %s\n", buffer);
+
+        char response[BUF_LEN] = {0};
+        char working_response[BUF_LEN] = {0};
+        input[received] = '\0';
+
+        int operation = toupper(input[0]);
+        switch (operation) {
+        // TODO: send a response with -e flag
+        case 'F':
+            err = fib_to_hex(input + 1, working_response, BUF_LEN);
+            if (err) {
+                fprintf(stderr, "Invalid input: %s\n", input);
+                continue;
+            }
+            break;
+        case 'D':
+            err = dec_to_hex(input + 1, working_response, BUF_LEN);
+            if (err) {
+                fprintf(stderr, "Invalid input: %s\n", input);
+                continue;
+            }
+            break;
+        case 'R':
+            snprintf(response, BUF_LEN, "Roman Numeral: %s\n", input + 1);
+            err = roman_to_hex(input + 1, working_response, BUF_LEN);
+            if (err) {
+                fprintf(stderr, "Invalid input: %s\n", input);
+                continue;
+            }
+            break;
+        default:
+            fprintf(stderr, "Error reading operation code: %s\n", input);
+            // drop input and get ready for more input without sending response
+            continue;
+            break;
+        }
+        printable_hex_array(working_response, response, BUF_LEN);
+        sendto(sd, response, strlen(response), 0, (struct sockaddr *)&client,
+               client_sz);
     }
 }
 
