@@ -1,3 +1,5 @@
+// sourced from user hajikelist at source
+// https://stackoverflow.com/a/861084
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
