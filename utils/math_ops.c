@@ -1,8 +1,13 @@
 #include "math_ops.h"
 #include "dec_to_hex.h"
 #include "roman_to_hex.h"
-#include <stdio.h> // WARNING: TESTING ONLY
+#include <stdio.h>
+#include <stdlib.h>
 
+/* STATIC FUNCTIONS */
+static int fibonacci(long step, const char *output, size_t output_len);
+
+/* PUBLIC FUNCTIONS */
 int roman_to_hex(const char *input, char *output, size_t output_len) {
     int converted = roman_to_dec(input);
     snprintf(output, output_len, "%x\n", converted);
@@ -21,6 +26,8 @@ int dec_to_hex(const char *input, char *output, size_t output_len) {
 }
 
 int fib_to_hex(const char *input, char *output, size_t output_len) {
-    snprintf(output, output_len, "Fibonacci: %s\n", input);
+    // TODO: error check input
+    long step = strtol(input, NULL, 10);
+    fibonacci(step, output, output_len);
     return 0;
 }
