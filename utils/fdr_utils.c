@@ -13,12 +13,31 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <sysexits.h> // exit codes
+#include <syslog.h>
 #include <unistd.h>
 
-enum { PORT_OFFSET = 1000, VALID_PORT = 1024, BUF_LEN = 1024 };
+enum {
+    PORT_OFFSET = 1000,
+    VALID_PORT = 1024,
+    BUF_LEN = 1024,
+    LOG_LEVEL = LOG_INFO | LOG_USER
+};
 static sem_t shutdown_semaphore;
 
 /* STATIC FUNCTIONS */
+static void log_request(const struct sockaddr *client, int sd) {
+    // TODO: add logging
+    syslog(LOG_LEVEL, "Received connection from _ on socket _");
+}
+
+static void log_error(const struct sockaddr *client, int sd, const char *msg,
+                      const char *input) {
+    fprintf(stderr, "%s: %s\n", msg, input);
+}
+
+static void log_response(const struct sockaddr *client, int sd,
+                         const char *input, const char *output, ssize_t sent) {}
+
 static void serve_port(int sd) {
     int err;
     for (;;) {
@@ -35,6 +54,7 @@ static void serve_port(int sd) {
             close(sd);
             return;
         }
+        log_request((const struct sockaddr *)&client, sd);
 
         char response[BUF_LEN] = {0};
         char working_response[BUF_LEN] = {0};
@@ -46,14 +66,16 @@ static void serve_port(int sd) {
         case 'F':
             err = fib_to_hex(input + 1, working_response, BUF_LEN);
             if (err) {
-                fprintf(stderr, "Invalid input: %s\n", input);
+                log_error((const struct sockaddr *)&client, sd, "Invalid input",
+                          input);
                 continue;
             }
             break;
         case 'D':
             err = dec_to_hex(input + 1, working_response, BUF_LEN);
             if (err) {
-                fprintf(stderr, "Invalid input: %s\n", input);
+                log_error((const struct sockaddr *)&client, sd, "Invalid input",
+                          input);
                 continue;
             }
             break;
@@ -61,19 +83,23 @@ static void serve_port(int sd) {
             snprintf(response, BUF_LEN, "Roman Numeral: %s\n", input + 1);
             err = roman_to_hex(input + 1, working_response, BUF_LEN);
             if (err) {
-                fprintf(stderr, "Invalid input: %s\n", input);
+                log_error((const struct sockaddr *)&client, sd,
+                          "Invalid input:", input);
                 continue;
             }
             break;
         default:
-            fprintf(stderr, "Error reading operation code: %s\n", input);
+            log_error((const struct sockaddr *)&client, sd,
+                      "Error reading operation code", input);
             // drop input and get ready for more input without sending response
             continue;
             break;
         }
         printable_hex_array(working_response, response, BUF_LEN);
-        sendto(sd, response, strlen(response), 0, (struct sockaddr *)&client,
-               client_sz);
+        ssize_t sent = sendto(sd, response, strlen(response), 0,
+                              (struct sockaddr *)&client, client_sz);
+        log_response((const struct sockaddr *)&client, sd, input, response,
+                     sent);
     }
 }
 
@@ -119,7 +145,9 @@ int prepare_socket(const char *port_str) {
 
 void shutdown_handler(int signum) { sem_post(&shutdown_semaphore); }
 
-void begin(void) {
+void begin(const char *ident) {
+    // open syslog for logging
+    openlog(ident, LOG_PID | LOG_PERROR, LOG_USER);
     sem_init(&shutdown_semaphore, 0, 0);
     const struct sigaction shutdown_action = {.sa_handler = shutdown_handler};
     // TODO: handle other possibly program ending signals
@@ -137,6 +165,8 @@ int end(int *sockets, pthread_t *threads, size_t sock_len) {
             close(sockets[i]);
         }
     }
+    // close syslog
+    closelog();
     return EX_OK;
 }
 
