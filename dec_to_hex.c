@@ -14,6 +14,9 @@ static void add_dec_value(char *hex_array, size_t num_elements, char value)
 
 char *init_hex_array(char *dec_str, size_t *num_elements)
 {
+    if (!dec_str || !num_elements) {
+        return NULL;
+    }
 	*num_elements = strlen(dec_str);
 	char *hex_array = calloc(*num_elements, sizeof(*hex_array));
 
@@ -26,8 +29,11 @@ char *init_hex_array(char *dec_str, size_t *num_elements)
 	return hex_array;
 }
 
-void print_hex_array(char *hex_array, size_t num_elements)
+char *get_hex_array(char *hex_array, size_t num_elements)
 {
+    if (!hex_array) {
+        return NULL;
+    }
 	const char hex_chars[16] = { '0', '1', '2', '3', '4', '5', '6', '7',
 		'8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
 
@@ -37,9 +43,15 @@ void print_hex_array(char *hex_array, size_t num_elements)
 	    // Skip past leading zeroes
 		++offset;
 	}
-
+	size_t counter = 0;
+	// Constant 1 is terminating '\0'
+    char *hex_str = calloc(num_elements + 1, sizeof(*hex_str));
 	for (size_t i = offset; i < num_elements; ++i) {
-		printf("%c", hex_chars[hex_array[i]]);
+		hex_str[counter] = hex_chars[hex_array[i]];
+		++counter;
 	}
-	putchar('\n');
+	// Append null terminator
+	hex_str[num_elements] = '\0';
+	return hex_str;
 }
+
