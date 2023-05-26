@@ -96,7 +96,7 @@ static void add_dec_value(char *hex_array, size_t num_elements, char value)
 	int carry = value;
 	// Cast is because i must be signed to avoid underflow,
 	// num_elements will never exceed max size of int
-	for (int i = num_elements - 1; i >= 0; --i) {
+	for (int i = (int) num_elements - 1; i >= 0; --i) {
 		int tmp = (hex_array[i] * 10) + carry;
 		// tmp cannot be greater than size of unsigned char
 		hex_array[i] = (unsigned char) tmp % 16;
