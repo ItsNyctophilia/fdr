@@ -33,15 +33,20 @@ struct client_info {
 
 bool case_matching = false;
 bool send_error = false;
+uint8_t inc_dec_sz = 0;
 
 /* STATIC FUNCTIONS */
 static int process_args(int *argc, char **argv[]) {
     int opt;
 
-    const char short_opts[] = ":ie";
+    const char short_opts[] = ":ied";
 
     while ((opt = getopt(*argc, *argv, short_opts)) != -1) {
         switch (opt) {
+        case 'd':
+            // d[ecimal]
+            inc_dec_sz = 1;
+            break;
         case 'i':
             // i[nsensitive]
             case_matching = true;
@@ -144,7 +149,7 @@ static void serve_port(int sd) {
                 uppercase = true;
             }
             err = dec_to_hex(input + 1, response, BUF_LEN, uppercase,
-                             MAX_DEC_LEN);
+                             MAX_DEC_LEN + inc_dec_sz);
             if (err) {
                 log_error((const struct sockaddr *)&client, client_sz, sd,
                           "Invalid input", input);
