@@ -25,6 +25,8 @@ struct client_info {
     uint16_t port;
 };
 
+bool case_matching = false;
+
 /* STATIC FUNCTIONS */
 static int process_args(int *argc, char **argv[]) {
     int opt;
@@ -36,6 +38,7 @@ static int process_args(int *argc, char **argv[]) {
         case 'i':
             // i[nsensitive]
             // TODO: not yet supported
+            case_matching = true;
             break;
         case 'e':
             // e[rror]
@@ -92,6 +95,7 @@ static void log_response(const struct sockaddr *client, int sd,
 static void serve_port(int sd) {
     int err;
     for (;;) {
+        bool uppercase = false;
         struct sockaddr_storage client;
         socklen_t client_sz = sizeof(client);
 
@@ -110,11 +114,14 @@ static void serve_port(int sd) {
         char working_response[BUF_LEN] = {0};
         input[received] = '\0';
 
-        int operation = toupper(input[0]);
-        switch (operation) {
+        int operation = input[0];
+        switch (toupper(operation)) {
         // TODO: send a response with -e flag
         case 'F':
-            err = fib_to_hex(input + 1, response, BUF_LEN);
+            if (case_matching && operation == 'F') {
+                uppercase = true;
+            }
+            err = fib_to_hex(input + 1, response, BUF_LEN, uppercase);
             if (err) {
                 log_error((const struct sockaddr *)&client, sd, "Invalid input",
                           input);
@@ -122,7 +129,10 @@ static void serve_port(int sd) {
             }
             break;
         case 'D':
-            err = dec_to_hex(input + 1, response, BUF_LEN);
+            if (case_matching && operation == 'D') {
+                uppercase = true;
+            }
+            err = dec_to_hex(input + 1, response, BUF_LEN, uppercase);
             if (err) {
                 log_error((const struct sockaddr *)&client, sd, "Invalid input",
                           input);
@@ -130,7 +140,10 @@ static void serve_port(int sd) {
             }
             break;
         case 'R':
-            err = roman_to_hex(input + 1, response, BUF_LEN);
+            if (case_matching && operation == 'R') {
+                uppercase = true;
+            }
+            err = roman_to_hex(input + 1, response, BUF_LEN, uppercase);
             if (err) {
                 log_error((const struct sockaddr *)&client, sd,
                           "Invalid input:", input);

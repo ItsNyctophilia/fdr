@@ -1,4 +1,5 @@
 #include "math_ops.h"
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -6,6 +7,11 @@
 enum { MAX_FIB = 300 };
 
 /* STATIC FUNCTIONS */
+static void lower_str(char *str) {
+    for (size_t i = 0; str[i]; ++i) {
+        str[i] = tolower(str[i]);
+    }
+}
 static int roman_value(char letter) {
     switch (letter) {
     case 'I':
@@ -129,17 +135,26 @@ static char *get_hex_array(char *hex_array, size_t num_elements) {
 static int fibonacci(long step, const char *output, size_t output_len);
 
 /* PUBLIC FUNCTIONS */
-int roman_to_hex(const char *input, char *output, size_t output_len) {
+int roman_to_hex(const char *input, char *output, size_t output_len,
+                 bool uppercase) {
     int converted = roman_to_dec(input);
-    snprintf(output, output_len, "0x%x", converted);
+    if (uppercase) {
+        snprintf(output, output_len, "0x%X", converted);
+    } else {
+        snprintf(output, output_len, "0x%x", converted);
+    }
     return 0;
 }
 
-int dec_to_hex(const char *input, char *output, size_t output_len) {
+int dec_to_hex(const char *input, char *output, size_t output_len,
+               bool uppercase) {
     size_t input_len = strlen(input);
     char *converted = init_hex_array(input, &input_len);
 
     char *formatted = get_hex_array(converted, input_len);
+    if (!uppercase) {
+        lower_str(formatted);
+    }
     snprintf(output, output_len, "0x%s", formatted);
     // strncpy(output, formatted, output_len);
     free(formatted);
@@ -147,7 +162,8 @@ int dec_to_hex(const char *input, char *output, size_t output_len) {
     return 0;
 }
 
-int fib_to_hex(const char *input, char *output, size_t output_len) {
+int fib_to_hex(const char *input, char *output, size_t output_len,
+               bool uppercase) {
     char *endptr;
     long step = strtol(input, &endptr, 10);
     // check if input is a non-number or is outside of allowed values
@@ -161,6 +177,9 @@ int fib_to_hex(const char *input, char *output, size_t output_len) {
     if (non_zero == strlen(temp)) {
         // check if output is 0
         non_zero--;
+    }
+    if (!uppercase) {
+        lower_str(temp);
     }
     snprintf(output, output_len, "0x%s", temp + non_zero);
     // strncpy(output, temp + non_zero, output_len);

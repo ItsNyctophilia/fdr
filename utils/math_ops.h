@@ -1,6 +1,7 @@
 #ifndef MATH_OPS_H
 #define MATH_OPS_H
 
+#include <stdbool.h>
 #include <stdlib.h>
 
 enum { BUF_LEN = 1024 };
@@ -10,9 +11,11 @@ enum { BUF_LEN = 1024 };
  * @param input The string of Roman numerals to convert.
  * @param output Where to store the output.
  * @param output_len The initial size of the output buffer.
+ * @param uppercase If the hex output should be in uppercase
  * @return int Status of conversion.
  */
-int roman_to_hex(const char *input, char *output, size_t output_len);
+int roman_to_hex(const char *input, char *output, size_t output_len,
+                 bool uppercase);
 
 /**
  * @brief Convert a string of decimal numbers to a hexadecimal number.
@@ -20,9 +23,11 @@ int roman_to_hex(const char *input, char *output, size_t output_len);
  * @param input The string of decimal numbers to convert.
  * @param output Where to store the output.
  * @param output_len The initial size of the output buffer.
+ * @param uppercase If the hex output should be in uppercase
  * @return int Status of conversion.
  */
-int dec_to_hex(const char *input, char *output, size_t output_len);
+int dec_to_hex(const char *input, char *output, size_t output_len,
+               bool uppercase);
 
 /**
  * @brief Calculate the Fibonacci sequence.
@@ -33,18 +38,10 @@ int dec_to_hex(const char *input, char *output, size_t output_len);
  * @param input The string of decimal numbers to calculate to.
  * @param output Where to store the output.
  * @param output_len The initial size of the output buffer.
+ * @param uppercase If the hex output should be in uppercase
  * @return int Status of calculation.
  */
-int fib_to_hex(const char *input, char *output, size_t output_len);
-
-/**
- * @brief Prepare a hex array to be printable by removing leading 0's.
- *
- * @param hex_array The array to prepare.
- * @param output Where to store the output.
- * @param output_len The initial size of the output buffer.
- */
-void printable_hex_array(const char *hex_array, char *output,
-                         size_t output_len);
+int fib_to_hex(const char *input, char *output, size_t output_len,
+               bool uppercase);
 
 #endif /* MATH_OPS_H */
