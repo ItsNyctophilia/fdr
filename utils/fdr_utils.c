@@ -29,13 +29,9 @@ struct client_info {
 static int process_args(int *argc, char **argv[]) {
     int opt;
 
-    char short_opts[] = ":ie";
-    struct option long_opts[] = {{"insensitive", no_argument, NULL, 'i'},
-                                 {"error", no_argument, NULL, 'e'},
-                                 {0, 0}};
+    const char short_opts[] = ":ie";
 
-    while ((opt = getopt_long(*argc, *argv, short_opts, long_opts, NULL)) !=
-           -1) {
+    while ((opt = getopt(*argc, *argv, short_opts)) != -1) {
         switch (opt) {
         case 'i':
             // i[nsensitive]
