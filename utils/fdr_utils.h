@@ -1,5 +1,6 @@
 #ifndef FDR_UTILS_H
 #define FDR_UTILS_H
+#include <pthread.h>
 #include <stdbool.h>
 #include <sys/types.h>
 
