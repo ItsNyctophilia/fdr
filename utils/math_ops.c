@@ -88,6 +88,9 @@ static int roman_to_dec(const char *str)
 	return total;
 }
 
+// hex_array-related functions adapted from hajikelist:
+// https://stackoverflow.com/a/861084
+
 static void add_dec_value(char *hex_array, size_t num_elements, char value)
 {
 	int carry = value;
