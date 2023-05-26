@@ -155,10 +155,10 @@ static bool validate_decimal(const char *input, size_t max_len) {
     }
     int zero_count = 0;
     bool leading_one = false;
+    if (input[0] == '1') {
+        leading_one = true;
+    }
     for (size_t i = 0; i < in_len; i++) {
-        if (i == 0 && input[i] == '1') {
-            leading_one = true;
-        }
         if (!isdigit(input[i])) {
             return false;
         }
@@ -167,7 +167,10 @@ static bool validate_decimal(const char *input, size_t max_len) {
         }
     }
     // check for input higher than 10^MAX_LEN
-    if (in_len == max_len && leading_one && zero_count > max_len - 1) {
+    if (in_len == max_len) {
+        if (leading_one && zero_count == max_len - 1) {
+            return true;
+        }
         return false;
     }
 

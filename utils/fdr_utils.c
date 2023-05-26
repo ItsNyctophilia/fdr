@@ -23,7 +23,7 @@ enum {
     VALID_PORT = 1024,
     LOG_LEVEL = LOG_INFO | LOG_USER,
     ERROR_LEN = BUF_LEN * 2,
-    MAX_DEC_LEN = 19
+    MAX_DEC_LEN = 20
 };
 static sem_t shutdown_semaphore;
 struct client_info {
