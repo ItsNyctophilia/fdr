@@ -9,13 +9,12 @@
 enum { PORT_STR_LEN = 6, NUM_PORTS = 3 };
 
 int main(int argc, char *argv[]) {
-    // TODO: add support for command line arguments
-    if (argc != 1) {
-        fprintf(stderr, "Usage: %s \n", argv[0]);
-        return EX_USAGE;
+    char *prog_name = argv[0];
+    int err = begin(&argc, &argv);
+    if (err) {
+        fprintf(stderr, "Usage: %s \n", prog_name);
+        return err;
     }
-
-    begin(argv[0]);
 
     // open and bind ports
     uid_t uid = getuid();

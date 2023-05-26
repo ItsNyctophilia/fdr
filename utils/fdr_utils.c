@@ -4,6 +4,7 @@
 #include "math_ops.h"
 #include <arpa/inet.h>
 #include <ctype.h>
+#include <getopt.h>
 #include <netdb.h>
 #include <pthread.h>
 #include <semaphore.h>
@@ -25,6 +26,36 @@ struct client_info {
 };
 
 /* STATIC FUNCTIONS */
+static int process_args(int *argc, char **argv[]) {
+    int opt;
+
+    char short_opts[] = ":ie";
+    struct option long_opts[] = {{"insensitive", no_argument, NULL, 'i'},
+                                 {"error", no_argument, NULL, 'e'},
+                                 {0, 0}};
+
+    while ((opt = getopt_long(*argc, *argv, short_opts, long_opts, NULL)) !=
+           -1) {
+        switch (opt) {
+        case 'i':
+            // i[nsensitive]
+            // TODO: not yet supported
+            break;
+        case 'e':
+            // e[rror]
+            // TODO: not yet supported
+            break;
+        case '?':
+            // unrecognized option
+            return EX_USAGE;
+        }
+    }
+
+    // readjust argc and argv
+    *argc -= optind;
+    *argv += optind;
+    return EX_OK;
+}
 static void probe_client(const struct sockaddr *client,
                          struct client_info *info) {
     // get information from the client
@@ -69,7 +100,6 @@ static void serve_port(int sd) {
         socklen_t client_sz = sizeof(client);
 
         char input[1024];
-        // TODO: add logging information using syslog(3)
         ssize_t received = recvfrom(sd, input, sizeof(input) - 1, 0,
                                     (struct sockaddr *)&client, &client_sz);
         if (received < 0) {
@@ -124,6 +154,8 @@ static void serve_port(int sd) {
     }
 }
 
+static void shutdown_handler(int signum) { sem_post(&shutdown_semaphore); }
+
 /* PUBLIC FUNCTIONS */
 bool port_to_str(u_int32_t base, size_t scale, char *port_str, size_t len) {
     u_int32_t port = base + PORT_OFFSET * scale;
@@ -164,15 +196,17 @@ int prepare_socket(const char *port_str) {
     return sd;
 }
 
-void shutdown_handler(int signum) { sem_post(&shutdown_semaphore); }
-
-void begin(const char *ident) {
+int begin(int *argc, char **argv[]) {
+    int err = process_args(argc, argv);
+    if (err) {
+        return err;
+    }
     // open syslog for logging
-    openlog(ident, LOG_PID | LOG_PERROR, LOG_USER);
+    openlog(*argv[0], LOG_PID | LOG_PERROR, LOG_USER);
     sem_init(&shutdown_semaphore, 0, 0);
     const struct sigaction shutdown_action = {.sa_handler = shutdown_handler};
-    // TODO: handle other possibly program ending signals
     sigaction(SIGINT, &shutdown_action, NULL);
+    return EX_OK;
 }
 
 int end(int *sockets, pthread_t *threads, size_t sock_len) {

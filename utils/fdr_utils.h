@@ -32,10 +32,11 @@ bool port_to_str(u_int32_t base, size_t scale, char *port_str, size_t len);
  *
  * Will initialize any needed values on the back end.
  *
- * @param ident The string to prepend onto any log entries
+ * @param argc The amount of program arguments
+ * @param argv The program arguments
  *
  */
-void begin(const char *ident);
+int begin(int *argc, char **argv[]);
 
 /**
  * @brief Wait for the server to finish, then clean up resources.
