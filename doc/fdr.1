@@ -1,0 +1,40 @@
+.TH fdr 1 "May 2023" "1.0" "fdr manual"
+.SH NAME
+fdr - host server responding to math requests
+.SH SYNOPSIS
+.B fdr [OPTIONS]
+.SH DESCRIPTION
+fdr is a program that hosts a service on three different ports that, when sent a correctly-formatted request, sends back the appropriate response based on the requested mathematical operation between decimal to hexadecimal conversion, fibonacci sequence calculation, or roman numeral to hexadecimal conversion.
+
+The following options are available:
+.TP
+.B -i
+Match the case of hexadecimal response to the request's leading format specifier character (f/d/r vs F/D/R).
+.TP
+.B -e
+Send an error message when an invalid format or an illegal operation is requested.
+.TP
+.B -d
+Support decimal to hexadecimal conversions up to 10^20 rather than the default 10^19.
+.SH RETURN VALUE
+fdr returns one of the following codes:
+.TP
+.B 0
+if the program ran successfully
+.TP
+.B 64
+if there was an error with the command line invocation
+.TP
+.B 68
+if there was an error retrieving address information
+.TP
+.B 69
+if there was an error while binding sockets
+.SH EXAMPLES
+To host a server that matches the case of the client's format-specifier string:
+.TP
+.B $ fdr -i
+.SH AUTHOR
+Written by James Viner, Raymonde Miller.
+
+
