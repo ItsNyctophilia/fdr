@@ -1,0 +1,49 @@
+\documentclass{article}
+
+\title{Project Writeup}
+\author{Raymone Miller}
+\begin{document}
+  \maketitle
+
+  \section{Project Summary}
+  Some server daemons will offer services to those that request it, such as
+  NTP. Write a math server that will provide similar services to those that
+  request a few specific items. The server should accept UDP requests in one
+  of three forms.
+  \begin{verbatim}
+    Fnumber
+        Given a decimal number is between 0-300 (inclusive), the response
+        packet should be F(number) in hexadecimal, where F() is the Fibonacci
+        function.
+    Dnumber
+        Given a decimal number between 0-10^19 (inclusive), the response packet
+        should be that number in hexadecimal.
+    Rnvmber
+        Given a Roman numeral nvmber between I-MMMM (inclusive), the response
+        packet should be that number in hexadecimal.
+  \end{verbatim}
+
+  \section{Challenges}
+  A challenge I had for this project was getting the fibonacci assembly code
+  to work within C. The code was originally written all within main, so I had
+  to rewrite parts of it to fit it into a callable function. I also originally
+  didn't properly follow the calling conventions for preserving registers.
+  This caused it to segfault in ways that I previously did not noticed because
+  it was being called instead of just being run directly in main. I took me a
+  while to understand this.
+
+  \section{Successes}
+  A success I found, which is tied to my challenge, is how I was able to
+  convert my fibonacci assembly code into a function and call it from the C
+  program. As I stated, it was something I was never able to do before, and I
+  am usually not comfortable with assembly. Being able to strip the code I had,
+  make the necessary changes, and additions to make the code work felt very
+  fulfilling for me.
+
+  \section{Lessons Learned}
+  A lesson I learned is that logging in Linux is a lot simpler than I thought.
+  I've never used the syslog functions before, and it was surprisingly a lot
+  more straightforward that I imagined to be able to log a message to the
+  system. And I can easily format the message like a call to printf.
+
+\end{document}
