@@ -131,7 +131,7 @@ static int fibonacci(long step, const char *output, size_t output_len);
 /* PUBLIC FUNCTIONS */
 int roman_to_hex(const char *input, char *output, size_t output_len) {
     int converted = roman_to_dec(input);
-    snprintf(output, output_len, "%x\n", converted);
+    snprintf(output, output_len, "%x", converted);
     return 0;
 }
 
