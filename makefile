@@ -17,11 +17,9 @@ debug: CFLAGS += -g
 debug: fdr
 
 .PHONY: check
-check: test/test-all
-	CK_EXCLUDE_TAGS=profile ./test/test-all
-
-test/test-all: LDLIBS += -lcheck -lm -lrt -lsubunit -lpthread
-test/test-all: test/test-all.o
+check: fdr
+check:
+	./test/test.bash
 
 .PHONY: profile
 profile: CFLAGS += -pg
