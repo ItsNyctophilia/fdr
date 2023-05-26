@@ -15,7 +15,7 @@ int main(int argc, char *argv[]) {
         return EX_USAGE;
     }
 
-    begin();
+    begin(argv[0]);
 
     // open and bind ports
     uid_t uid = getuid();
