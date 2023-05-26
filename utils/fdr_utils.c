@@ -205,7 +205,8 @@ static void shutdown_handler(int signum)
 /* PUBLIC FUNCTIONS */
 bool port_to_str(u_int32_t base, size_t scale, char *port_str, size_t len)
 {
-	u_int32_t port = base + PORT_OFFSET * scale;
+	// Scale will never be large enough to overflow downcast
+	u_int32_t port = base + PORT_OFFSET * (u_int32_t) scale;
 	snprintf(port_str, len, "%d", port);
 	return port < VALID_PORT ? false : true;
 }

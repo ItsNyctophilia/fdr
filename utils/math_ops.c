@@ -10,7 +10,8 @@ enum { MAX_FIB = 300 };
 static void lower_str(char *str)
 {
 	for (size_t i = 0; str[i]; ++i) {
-		str[i] = tolower(str[i]);
+		// Will only be fed ascii characters
+		str[i] = (char) tolower(str[i]);
 	}
 }
 
@@ -42,7 +43,7 @@ static int roman_to_dec(const char *str)
 {
 	size_t len = strlen(str);
 
-	unsigned curr_num_occurrences = 1;
+	int curr_num_occurrences = 1;
 	int total = 0;
 	int prev_val = 0;
 
@@ -89,10 +90,13 @@ static int roman_to_dec(const char *str)
 
 static void add_dec_value(char *hex_array, size_t num_elements, char value)
 {
-	unsigned char carry = value;
-	for (int i = num_elements - 1; i >= 0; --i) {
-		unsigned char tmp = (hex_array[i] * 10) + carry;
-		hex_array[i] = tmp % 16;
+	int carry = value;
+	// Cast is because i must be signed to avoid underflow,
+	// num_elements will never exceed max size of int
+	for (int i = (int) num_elements - 1; i >= 0; --i) {
+		int tmp = (hex_array[i] * 10) + carry;
+		// tmp cannot be greater than size of char
+		hex_array[i] = (char) tmp % 16;
 		carry = tmp / 16;
 	}
 }
@@ -144,7 +148,7 @@ static char *get_hex_array(char *hex_array, size_t num_elements)
 static bool validate_roman(const char *input)
 {
 	// reject non roman numerals
-	static char *roman_alphabet = "IVXLCDM";
+	const char *roman_alphabet = "IVXLCDM";
 	size_t in_len = strlen(input);
 
 	for (size_t i = 0; i < in_len; i++) {
@@ -184,7 +188,7 @@ static bool validate_decimal(const char *input, size_t max_len)
 	return true;
 }
 
-static int fibonacci(long step, const char *output, size_t output_len);
+int fibonacci(long step, const char *output, size_t output_len);
 
 /* PUBLIC FUNCTIONS */
 int roman_to_hex(const char *input, char *output,
