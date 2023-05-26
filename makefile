@@ -5,7 +5,7 @@ CFLAGS += -Wwrite-strings -Wfloat-equal -Wconversion -Wvla
 # On assumptions
 CFLAGS += -Waggregate-return -Winline
 
-CFLAGS += -std=c17
+CFLAGS += -std=c18
 LDFLAGS += -pthread
 
 fdr: fdr.o utils/fdr_utils.o utils/fibonacci.o utils/math_ops.o

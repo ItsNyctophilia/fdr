@@ -155,32 +155,33 @@ static bool validate_roman(const char *input)
 	return true;
 }
 
-static bool validate_decimal(const char *input, size_t max_len) {
-    size_t in_len = strlen(input);
-    if (in_len > max_len) {
-        return false;
-    }
-    int zero_count = 0;
-    bool leading_one = false;
-    if (input[0] == '1') {
-        leading_one = true;
-    }
-    for (size_t i = 0; i < in_len; i++) {
-        if (!isdigit(input[i])) {
-            return false;
-        }
-        if (input[i] == '0') {
-            ++zero_count;
-        }
-    }
-    // check for input higher than 10^MAX_LEN
-    if (in_len == max_len) {
-        if (!(leading_one && zero_count == max_len - 1)) {
-            return false;
-        }
-    }
+static bool validate_decimal(const char *input, size_t max_len)
+{
+	size_t in_len = strlen(input);
+	if (in_len > max_len) {
+		return false;
+	}
+	int zero_count = 0;
+	bool leading_one = false;
+	if (input[0] == '1') {
+		leading_one = true;
+	}
+	for (size_t i = 0; i < in_len; i++) {
+		if (!isdigit(input[i])) {
+			return false;
+		}
+		if (input[i] == '0') {
+			++zero_count;
+		}
+	}
+	// check for input higher than 10^MAX_LEN
+	if (in_len == max_len) {
+		if (!(leading_one && zero_count == max_len - 1)) {
+			return false;
+		}
+	}
 
-    return true;
+	return true;
 }
 
 static int fibonacci(long step, const char *output, size_t output_len);

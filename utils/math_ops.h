@@ -15,7 +15,7 @@ enum { BUF_LEN = 1024 };
  * @return int Status of conversion.
  */
 int roman_to_hex(const char *input, char *output, size_t output_len,
-                 bool uppercase);
+		 bool uppercase);
 
 /**
  * @brief Convert a string of decimal numbers to a hexadecimal number.
@@ -28,7 +28,7 @@ int roman_to_hex(const char *input, char *output, size_t output_len,
  * @return int Status of conversion.
  */
 int dec_to_hex(const char *input, char *output, size_t output_len,
-               bool uppercase, size_t max_len);
+	       bool uppercase, size_t max_len);
 
 /**
  * @brief Calculate the Fibonacci sequence.
@@ -43,6 +43,6 @@ int dec_to_hex(const char *input, char *output, size_t output_len,
  * @return int Status of calculation.
  */
 int fib_to_hex(const char *input, char *output, size_t output_len,
-               bool uppercase);
+	       bool uppercase);
 
-#endif /* MATH_OPS_H */
+#endif				/* MATH_OPS_H */
