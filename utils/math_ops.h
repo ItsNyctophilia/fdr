@@ -24,10 +24,11 @@ int roman_to_hex(const char *input, char *output, size_t output_len,
  * @param output Where to store the output.
  * @param output_len The initial size of the output buffer.
  * @param uppercase If the hex output should be in uppercase
+ * @param max_len The maximum allowed characters in the input string.
  * @return int Status of conversion.
  */
 int dec_to_hex(const char *input, char *output, size_t output_len,
-               bool uppercase);
+               bool uppercase, size_t max_len);
 
 /**
  * @brief Calculate the Fibonacci sequence.

@@ -22,7 +22,8 @@ enum {
     PORT_OFFSET = 1000,
     VALID_PORT = 1024,
     LOG_LEVEL = LOG_INFO | LOG_USER,
-    ERROR_LEN = BUF_LEN * 2
+    ERROR_LEN = BUF_LEN * 2,
+    MAX_DEC_LEN = 19
 };
 static sem_t shutdown_semaphore;
 struct client_info {
@@ -142,7 +143,8 @@ static void serve_port(int sd) {
             if (case_matching && operation == 'D') {
                 uppercase = true;
             }
-            err = dec_to_hex(input + 1, response, BUF_LEN, uppercase);
+            err = dec_to_hex(input + 1, response, BUF_LEN, uppercase,
+                             MAX_DEC_LEN);
             if (err) {
                 log_error((const struct sockaddr *)&client, client_sz, sd,
                           "Invalid input", input);
@@ -156,7 +158,7 @@ static void serve_port(int sd) {
             err = roman_to_hex(input + 1, response, BUF_LEN, uppercase);
             if (err) {
                 log_error((const struct sockaddr *)&client, client_sz, sd,
-                          "Invalid input:", input);
+                          "Invalid input", input);
                 continue;
             }
             break;
