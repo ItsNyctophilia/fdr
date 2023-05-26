@@ -1,11 +1,11 @@
 # Sanity
-CLAGS += -Wall -Wextra -Wpedantic
+CLAGS += -W -Wall -Wextra -Wpedantic
 # On types
 CFLAGS += -Wwrite-strings -Wfloat-equal -Wconversion -Wvla
 # On assumptions
 CFLAGS += -Waggregate-return -Winline
 
-CFLAGS += -std=c17
+CFLAGS += -std=c18
 LDFLAGS += -pthread
 
 fdr: fdr.o utils/fdr_utils.o utils/fibonacci.o utils/math_ops.o
@@ -17,11 +17,9 @@ debug: CFLAGS += -g
 debug: fdr
 
 .PHONY: check
-check: test/test-all
-	CK_EXCLUDE_TAGS=profile ./test/test-all
-
-test/test-all: LDLIBS += -lcheck -lm -lrt -lsubunit -lpthread
-test/test-all: test/test-all.o
+check: fdr
+check:
+	./test/test.bash
 
 .PHONY: profile
 profile: CFLAGS += -pg
