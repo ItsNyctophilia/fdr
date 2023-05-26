@@ -1,5 +1,5 @@
 # Sanity
-CLAGS += -Wall -Wextra -Wpedantic
+CLAGS += -W -Wall -Wextra -Wpedantic
 # On types
 CFLAGS += -Wwrite-strings -Wfloat-equal -Wconversion -Wvla
 # On assumptions
