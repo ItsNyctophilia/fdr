@@ -7,16 +7,14 @@
 enum { MAX_FIB = 300 };
 
 /* STATIC FUNCTIONS */
-static void lower_str(char *str)
-{
+static void lower_str(char *str) {
 	for (size_t i = 0; str[i]; ++i) {
 		// Will only be fed ascii characters
-		str[i] = (char) tolower(str[i]);
+		str[i] = (char)tolower(str[i]);
 	}
 }
 
-static int roman_value(char letter)
-{
+static int roman_value(char letter) {
 	switch (letter) {
 	case 'I':
 		return 1;
@@ -39,8 +37,7 @@ static int roman_value(char letter)
 	}
 }
 
-static int roman_to_dec(const char *str)
-{
+static int roman_to_dec(const char *str) {
 	size_t len = strlen(str);
 
 	int curr_num_occurrences = 1;
@@ -91,21 +88,19 @@ static int roman_to_dec(const char *str)
 // hex_array-related functions adapted from hajikelist:
 // https://stackoverflow.com/a/861084
 
-static void add_dec_value(char *hex_array, size_t num_elements, char value)
-{
+static void add_dec_value(char *hex_array, size_t num_elements, char value) {
 	int carry = value;
 	// Cast is because i must be signed to avoid underflow,
 	// num_elements will never exceed max size of int
-	for (int i = (int) num_elements - 1; i >= 0; --i) {
+	for (int i = (int)num_elements - 1; i >= 0; --i) {
 		int tmp = (hex_array[i] * 10) + carry;
 		// tmp cannot be greater than size of unsigned char
-		hex_array[i] = (unsigned char) tmp % 16;
+		hex_array[i] = (unsigned char)tmp % 16;
 		carry = tmp / 16;
 	}
 }
 
-static char *init_hex_array(const char *dec_str, size_t *num_elements)
-{
+static char *init_hex_array(const char *dec_str, size_t *num_elements) {
 	if (!dec_str || !num_elements) {
 		return NULL;
 	}
@@ -121,14 +116,12 @@ static char *init_hex_array(const char *dec_str, size_t *num_elements)
 	return hex_array;
 }
 
-static char *get_hex_array(char *hex_array, size_t num_elements)
-{
+static char *get_hex_array(char *hex_array, size_t num_elements) {
 	if (!hex_array) {
 		return NULL;
 	}
-	const char hex_chars[16] = { '0', '1', '2', '3', '4', '5', '6', '7',
-		'8', '9', 'A', 'B', 'C', 'D', 'E', 'F'
-	};
+	const char hex_chars[16] = {'0', '1', '2', '3', '4', '5', '6', '7',
+				    '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
 
 	size_t offset = 0;
 
@@ -148,8 +141,7 @@ static char *get_hex_array(char *hex_array, size_t num_elements)
 	return hex_str;
 }
 
-static bool validate_roman(const char *input)
-{
+static bool validate_roman(const char *input) {
 	// reject non roman numerals
 	const char *roman_alphabet = "IVXLCDM";
 	size_t in_len = strlen(input);
@@ -162,8 +154,7 @@ static bool validate_roman(const char *input)
 	return true;
 }
 
-static bool validate_decimal(const char *input, size_t max_len)
-{
+static bool validate_decimal(const char *input, size_t max_len) {
 	size_t in_len = strlen(input);
 	if (in_len > max_len) {
 		return false;
@@ -194,9 +185,8 @@ static bool validate_decimal(const char *input, size_t max_len)
 int fibonacci(long step, const char *output, size_t output_len);
 
 /* PUBLIC FUNCTIONS */
-int roman_to_hex(const char *input, char *output,
-		 size_t output_len, bool uppercase)
-{
+int roman_to_hex(const char *input, char *output, size_t output_len,
+		 bool uppercase) {
 	if (!validate_roman(input)) {
 		return EX_USAGE;
 	}
@@ -212,9 +202,8 @@ int roman_to_hex(const char *input, char *output,
 	return EX_OK;
 }
 
-int dec_to_hex(const char *input, char *output,
-	       size_t output_len, bool uppercase, size_t max_len)
-{
+int dec_to_hex(const char *input, char *output, size_t output_len,
+	       bool uppercase, size_t max_len) {
 	if (!validate_decimal(input, max_len)) {
 		return EX_USAGE;
 	}
@@ -232,9 +221,8 @@ int dec_to_hex(const char *input, char *output,
 	return EX_OK;
 }
 
-int fib_to_hex(const char *input, char *output,
-	       size_t output_len, bool uppercase)
-{
+int fib_to_hex(const char *input, char *output, size_t output_len,
+	       bool uppercase) {
 	char *endptr;
 	long step = strtol(input, &endptr, 10);
 	// check if input is a non-number or is outside of allowed values
@@ -242,7 +230,7 @@ int fib_to_hex(const char *input, char *output,
 		return EX_USAGE;
 	}
 
-	char temp[BUF_LEN] = { 0 };
+	char temp[BUF_LEN] = {0};
 	fibonacci(step, temp, BUF_LEN);
 	size_t non_zero = strspn(temp, "0");
 	if (non_zero == strlen(temp)) {

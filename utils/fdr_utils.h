@@ -46,8 +46,16 @@ int begin(int *argc, char **argv[]);
  * @param sock_len The number of opened sockets.
  * @return int 0 on successful server close, non-zero on error.
  */
-int end(int *sockets, pthread_t * threads, size_t sock_len);
+int end(int *sockets, pthread_t *threads, size_t sock_len);
 
+/**
+ * @brief Procedure to be called by every thread.
+ *
+ * Called by threads and handles requests from clients to the server.
+ *
+ * @param arg The socket number that this thread will handle.
+ * @return void* Unused
+ */
 void *service_thread(void *arg);
 
-#endif				/* FDR_UTILS_H */
+#endif /* FDR_UTILS_H */
