@@ -8,7 +8,7 @@ CFLAGS += -Waggregate-return -Winline
 CFLAGS += -std=c17
 LDFLAGS += -pthread
 
-fdr: fdr.o utils/fdr_utils.o utils/fibonacci.o utils/math_ops.o utils/dec_to_hex.o utils/roman_to_hex.o
+fdr: fdr.o utils/fdr_utils.o utils/fibonacci.o utils/math_ops.o
 
 %.s: CFLAGS += -O1 -masm=intel -fno-asynchronous-unwind-tables
 
