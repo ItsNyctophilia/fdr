@@ -45,4 +45,4 @@ int dec_to_hex(const char *input, char *output, size_t output_len,
 int fib_to_hex(const char *input, char *output, size_t output_len,
 	       bool uppercase);
 
-#endif				/* MATH_OPS_H */
+#endif /* MATH_OPS_H */
