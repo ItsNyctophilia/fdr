@@ -4,6 +4,7 @@
 #include "math_ops.h"
 #include <arpa/inet.h>
 #include <ctype.h>
+#include <getopt.h>
 #include <netdb.h>
 #include <pthread.h>
 #include <semaphore.h>
@@ -17,14 +18,54 @@
 #include <syslog.h>
 #include <unistd.h>
 
-enum { PORT_OFFSET = 1000, VALID_PORT = 1024, LOG_LEVEL = LOG_INFO | LOG_USER };
+enum {
+    PORT_OFFSET = 1000,
+    VALID_PORT = 1024,
+    LOG_LEVEL = LOG_INFO | LOG_USER,
+    ERROR_LEN = BUF_LEN * 2,
+    MAX_DEC_LEN = 19
+};
 static sem_t shutdown_semaphore;
 struct client_info {
     char addr[INET6_ADDRSTRLEN];
     uint16_t port;
 };
 
+bool case_matching = false;
+bool send_error = false;
+uint8_t inc_dec_sz = 0;
+
 /* STATIC FUNCTIONS */
+static int process_args(int *argc, char **argv[]) {
+    int opt;
+
+    const char short_opts[] = ":ied";
+
+    while ((opt = getopt(*argc, *argv, short_opts)) != -1) {
+        switch (opt) {
+        case 'd':
+            // d[ecimal]
+            inc_dec_sz = 1;
+            break;
+        case 'i':
+            // i[nsensitive]
+            case_matching = true;
+            break;
+        case 'e':
+            // e[rror]
+            send_error = true;
+            break;
+        case '?':
+            // unrecognized option
+            return EX_USAGE;
+        }
+    }
+
+    // readjust argc and argv
+    *argc -= optind;
+    *argv += optind;
+    return EX_OK;
+}
 static void probe_client(const struct sockaddr *client,
                          struct client_info *info) {
     // get information from the client
@@ -49,9 +90,14 @@ static void log_request(const struct sockaddr *client, int sd,
            info.addr, info.port, sd, request);
 }
 
-static void log_error(const struct sockaddr *client, int sd, const char *msg,
-                      const char *input) {
-    syslog(LOG_LEVEL, "%s: %s\n", msg, input);
+static void log_error(const struct sockaddr *client, socklen_t client_sz,
+                      int sd, const char *msg, const char *input) {
+    syslog(LOG_LEVEL, "%s: %s", msg, input);
+    if (send_error) {
+        char err_msg[ERROR_LEN] = {0};
+        snprintf(err_msg, sizeof(err_msg), "%s: %s\n", msg, input);
+        sendto(sd, err_msg, strlen(err_msg), 0, client, client_sz);
+    }
 }
 
 static void log_response(const struct sockaddr *client, int sd,
@@ -65,11 +111,11 @@ static void log_response(const struct sockaddr *client, int sd,
 static void serve_port(int sd) {
     int err;
     for (;;) {
+        bool uppercase = false;
         struct sockaddr_storage client;
         socklen_t client_sz = sizeof(client);
 
         char input[1024];
-        // TODO: add logging information using syslog(3)
         ssize_t received = recvfrom(sd, input, sizeof(input) - 1, 0,
                                     (struct sockaddr *)&client, &client_sz);
         if (received < 0) {
@@ -84,35 +130,45 @@ static void serve_port(int sd) {
         char working_response[BUF_LEN] = {0};
         input[received] = '\0';
 
-        int operation = toupper(input[0]);
-        switch (operation) {
+        int operation = input[0];
+        switch (toupper(operation)) {
         // TODO: send a response with -e flag
         case 'F':
-            err = fib_to_hex(input + 1, response, BUF_LEN);
+            if (case_matching && operation == 'F') {
+                uppercase = true;
+            }
+            err = fib_to_hex(input + 1, response, BUF_LEN, uppercase);
             if (err) {
-                log_error((const struct sockaddr *)&client, sd, "Invalid input",
-                          input);
+                log_error((const struct sockaddr *)&client, client_sz, sd,
+                          "Invalid input", input);
                 continue;
             }
             break;
         case 'D':
-            err = dec_to_hex(input + 1, response, BUF_LEN);
+            if (case_matching && operation == 'D') {
+                uppercase = true;
+            }
+            err = dec_to_hex(input + 1, response, BUF_LEN, uppercase,
+                             MAX_DEC_LEN + inc_dec_sz);
             if (err) {
-                log_error((const struct sockaddr *)&client, sd, "Invalid input",
-                          input);
+                log_error((const struct sockaddr *)&client, client_sz, sd,
+                          "Invalid input", input);
                 continue;
             }
             break;
         case 'R':
-            err = roman_to_hex(input + 1, response, BUF_LEN);
+            if (case_matching && operation == 'R') {
+                uppercase = true;
+            }
+            err = roman_to_hex(input + 1, response, BUF_LEN, uppercase);
             if (err) {
-                log_error((const struct sockaddr *)&client, sd,
-                          "Invalid input:", input);
+                log_error((const struct sockaddr *)&client, client_sz, sd,
+                          "Invalid input", input);
                 continue;
             }
             break;
         default:
-            log_error((const struct sockaddr *)&client, sd,
+            log_error((const struct sockaddr *)&client, client_sz, sd,
                       "Error reading operation code", input);
             // drop input and get ready for more input without sending response
             continue;
@@ -123,6 +179,8 @@ static void serve_port(int sd) {
         log_response((const struct sockaddr *)&client, sd, input, response);
     }
 }
+
+static void shutdown_handler(int signum) { sem_post(&shutdown_semaphore); }
 
 /* PUBLIC FUNCTIONS */
 bool port_to_str(u_int32_t base, size_t scale, char *port_str, size_t len) {
@@ -164,15 +222,17 @@ int prepare_socket(const char *port_str) {
     return sd;
 }
 
-void shutdown_handler(int signum) { sem_post(&shutdown_semaphore); }
-
-void begin(const char *ident) {
+int begin(int *argc, char **argv[]) {
+    int err = process_args(argc, argv);
+    if (err) {
+        return err;
+    }
     // open syslog for logging
-    openlog(ident, LOG_PID | LOG_PERROR, LOG_USER);
+    openlog(*argv[0], LOG_PID | LOG_PERROR, LOG_USER);
     sem_init(&shutdown_semaphore, 0, 0);
     const struct sigaction shutdown_action = {.sa_handler = shutdown_handler};
-    // TODO: handle other possibly program ending signals
     sigaction(SIGINT, &shutdown_action, NULL);
+    return EX_OK;
 }
 
 int end(int *sockets, pthread_t *threads, size_t sock_len) {

@@ -1,4 +1,5 @@
 #include "math_ops.h"
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -6,6 +7,11 @@
 enum { MAX_FIB = 300 };
 
 /* STATIC FUNCTIONS */
+static void lower_str(char *str) {
+    for (size_t i = 0; str[i]; ++i) {
+        str[i] = tolower(str[i]);
+    }
+}
 static int roman_value(char letter) {
     switch (letter) {
     case 'I':
@@ -126,28 +132,86 @@ static char *get_hex_array(char *hex_array, size_t num_elements) {
     hex_str[num_elements] = '\0';
     return hex_str;
 }
+
+static bool validate_roman(const char *input) {
+    // limit to 4 numerals, reject non roman numerals
+    static char *roman_alphabet = "IVXLCDM";
+    size_t in_len = strlen(input);
+    if (in_len > 4) {
+        return false;
+    }
+    for (size_t i = 0; i < in_len; i++) {
+        if (!strchr(roman_alphabet, input[i])) {
+            return false;
+        }
+    }
+    return true;
+}
+
+static bool validate_decimal(const char *input, size_t max_len) {
+    size_t in_len = strlen(input);
+    if (in_len > max_len) {
+        return false;
+    }
+    int zero_count = 0;
+    bool leading_one = false;
+    for (size_t i = 0; i < in_len; i++) {
+        if (i == 0 && input[i] == '1') {
+            leading_one = true;
+        }
+        if (!isdigit(input[i])) {
+            return false;
+        }
+        if (input[i] == '0') {
+            ++zero_count;
+        }
+    }
+    // check for input higher than 10^MAX_LEN
+    if (in_len == max_len && leading_one && zero_count > max_len - 1) {
+        return false;
+    }
+
+    return true;
+}
+
 static int fibonacci(long step, const char *output, size_t output_len);
 
 /* PUBLIC FUNCTIONS */
-int roman_to_hex(const char *input, char *output, size_t output_len) {
+int roman_to_hex(const char *input, char *output, size_t output_len,
+                 bool uppercase) {
+    if (!validate_roman(input)) {
+        return EX_USAGE;
+    }
     int converted = roman_to_dec(input);
-    snprintf(output, output_len, "0x%x", converted);
-    return 0;
+    if (uppercase) {
+        snprintf(output, output_len, "0x%X", converted);
+    } else {
+        snprintf(output, output_len, "0x%x", converted);
+    }
+    return EX_OK;
 }
 
-int dec_to_hex(const char *input, char *output, size_t output_len) {
+int dec_to_hex(const char *input, char *output, size_t output_len,
+               bool uppercase, size_t max_len) {
+    if (!validate_decimal(input, max_len)) {
+        return EX_USAGE;
+    }
     size_t input_len = strlen(input);
     char *converted = init_hex_array(input, &input_len);
 
     char *formatted = get_hex_array(converted, input_len);
+    if (!uppercase) {
+        lower_str(formatted);
+    }
     snprintf(output, output_len, "0x%s", formatted);
     // strncpy(output, formatted, output_len);
     free(formatted);
     free(converted);
-    return 0;
+    return EX_OK;
 }
 
-int fib_to_hex(const char *input, char *output, size_t output_len) {
+int fib_to_hex(const char *input, char *output, size_t output_len,
+               bool uppercase) {
     char *endptr;
     long step = strtol(input, &endptr, 10);
     // check if input is a non-number or is outside of allowed values
@@ -161,6 +225,9 @@ int fib_to_hex(const char *input, char *output, size_t output_len) {
     if (non_zero == strlen(temp)) {
         // check if output is 0
         non_zero--;
+    }
+    if (!uppercase) {
+        lower_str(temp);
     }
     snprintf(output, output_len, "0x%s", temp + non_zero);
     // strncpy(output, temp + non_zero, output_len);
