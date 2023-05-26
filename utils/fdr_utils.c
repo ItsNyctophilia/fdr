@@ -18,7 +18,12 @@
 #include <syslog.h>
 #include <unistd.h>
 
-enum { PORT_OFFSET = 1000, VALID_PORT = 1024, LOG_LEVEL = LOG_INFO | LOG_USER };
+enum {
+    PORT_OFFSET = 1000,
+    VALID_PORT = 1024,
+    LOG_LEVEL = LOG_INFO | LOG_USER,
+    ERROR_LEN = BUF_LEN * 2
+};
 static sem_t shutdown_semaphore;
 struct client_info {
     char addr[INET6_ADDRSTRLEN];
@@ -26,6 +31,7 @@ struct client_info {
 };
 
 bool case_matching = false;
+bool send_error = false;
 
 /* STATIC FUNCTIONS */
 static int process_args(int *argc, char **argv[]) {
@@ -37,12 +43,11 @@ static int process_args(int *argc, char **argv[]) {
         switch (opt) {
         case 'i':
             // i[nsensitive]
-            // TODO: not yet supported
             case_matching = true;
             break;
         case 'e':
             // e[rror]
-            // TODO: not yet supported
+            send_error = true;
             break;
         case '?':
             // unrecognized option
@@ -79,9 +84,14 @@ static void log_request(const struct sockaddr *client, int sd,
            info.addr, info.port, sd, request);
 }
 
-static void log_error(const struct sockaddr *client, int sd, const char *msg,
-                      const char *input) {
-    syslog(LOG_LEVEL, "%s: %s\n", msg, input);
+static void log_error(const struct sockaddr *client, socklen_t client_sz,
+                      int sd, const char *msg, const char *input) {
+    syslog(LOG_LEVEL, "%s: %s", msg, input);
+    if (send_error) {
+        char err_msg[ERROR_LEN] = {0};
+        snprintf(err_msg, sizeof(err_msg), "%s: %s\n", msg, input);
+        sendto(sd, err_msg, strlen(err_msg), 0, client, client_sz);
+    }
 }
 
 static void log_response(const struct sockaddr *client, int sd,
@@ -123,8 +133,8 @@ static void serve_port(int sd) {
             }
             err = fib_to_hex(input + 1, response, BUF_LEN, uppercase);
             if (err) {
-                log_error((const struct sockaddr *)&client, sd, "Invalid input",
-                          input);
+                log_error((const struct sockaddr *)&client, client_sz, sd,
+                          "Invalid input", input);
                 continue;
             }
             break;
@@ -134,8 +144,8 @@ static void serve_port(int sd) {
             }
             err = dec_to_hex(input + 1, response, BUF_LEN, uppercase);
             if (err) {
-                log_error((const struct sockaddr *)&client, sd, "Invalid input",
-                          input);
+                log_error((const struct sockaddr *)&client, client_sz, sd,
+                          "Invalid input", input);
                 continue;
             }
             break;
@@ -145,13 +155,13 @@ static void serve_port(int sd) {
             }
             err = roman_to_hex(input + 1, response, BUF_LEN, uppercase);
             if (err) {
-                log_error((const struct sockaddr *)&client, sd,
+                log_error((const struct sockaddr *)&client, client_sz, sd,
                           "Invalid input:", input);
                 continue;
             }
             break;
         default:
-            log_error((const struct sockaddr *)&client, sd,
+            log_error((const struct sockaddr *)&client, client_sz, sd,
                       "Error reading operation code", input);
             // drop input and get ready for more input without sending response
             continue;
