@@ -273,10 +273,60 @@ if [ ! -s output.txt ]; then
 else
     echo -e "13. Roman Clamp Test (RMMMMI)        : ${RED}FAIL${NC}"
 fi
-
 # There is no lower bound test because there is no character for zero,
 # so any test attempting to go lower than I would not receive a response
 # for using an invalid character rather than because it was too low.
+
+# Test 14: program connects and matches case with -i
+
+FILES=""
+# Bring server down and set back up with option -d
+pkill fdr
+OPTIONS="-i"
+$FILENAME $OPTIONS 2>/dev/null &
+sleep 1
+
+EXPECTED_OUTPUT="0xFA0"
+
+# Expected: Server returns '0xFA0'
+echo -n "RMMMM" | nc -u -w1 localhost $UID > output.txt
+
+if grep -q "$EXPECTED_OUTPUT" output.txt; then
+    echo -e "14a. Case Matching Test (Upper)      : ${GREEN}PASS${NC}"
+else
+    echo -e "14a. Case Matching Test (Upper)      : ${RED}FAIL${NC}"
+fi
+
+EXPECTED_OUTPUT="0xfa0"
+# Expected: Server returns '0xfa0'
+echo -n "rMMMM" | nc -u -w1 localhost $UID > output.txt
+
+if grep -q "$EXPECTED_OUTPUT" output.txt; then
+    echo -e "14b. Case Matching Test (Lower)      : ${GREEN}PASS${NC}"
+else
+    echo -e "14b. Case Matching Test (Lower)      : ${RED}FAIL${NC}"
+fi
+
+
+# Test 15: program connects and matches uppercase with -e
+
+FILES=""
+# Bring server down and set back up with option -e
+pkill fdr
+OPTIONS="-e"
+$FILENAME $OPTIONS 2>/dev/null &
+sleep 1
+
+EXPECTED_OUTPUT="Invalid input: Dhello"
+
+# Expected: Server returns '0xFA0'
+echo -n "Dhello" | nc -u -w1 localhost $UID > output.txt
+
+if grep -q "$EXPECTED_OUTPUT" output.txt; then
+    echo -e "15. Error Packet Test                : ${GREEN}PASS${NC}"
+else
+    echo -e "15. Error Packet Test                : ${RED}FAIL${NC}"
+fi
 
 #################### CLEANUP ####################
 # Delete temp file
